@@ -62,7 +62,7 @@ type HTTPOutput struct {
 
 	redirectLimit int
 
-	needWorker    chan int
+	needWorker chan int
 
 	urlRegexp            HTTPUrlRegexp
 	headerFilters        HTTPHeaderFilters
@@ -75,9 +75,11 @@ type HTTPOutput struct {
 	elasticSearch *ESPlugin
 
 	queueStats *GorStat
+
+	parameters UrlParametes
 }
 
-func NewHTTPOutput(address string, headers HTTPHeaders, methods HTTPMethods, urlRegexp HTTPUrlRegexp, headerFilters HTTPHeaderFilters, headerHashFilters HTTPHeaderHashFilters, elasticSearchAddr string, outputHTTPUrlRewrite UrlRewriteMap, outputHTTPRedirects int) io.Writer {
+func NewHTTPOutput(address string, headers HTTPHeaders, methods HTTPMethods, urlRegexp HTTPUrlRegexp, headerFilters HTTPHeaderFilters, headerHashFilters HTTPHeaderHashFilters, elasticSearchAddr string, outputHTTPUrlRewrite UrlRewriteMap, outputHTTPRedirects int, parameters UrlParametes) io.Writer {
 
 	o := new(HTTPOutput)
 
@@ -95,6 +97,9 @@ func NewHTTPOutput(address string, headers HTTPHeaders, methods HTTPMethods, url
 	o.headerFilters = headerFilters
 	o.headerHashFilters = headerHashFilters
 	o.outputHTTPUrlRewrite = outputHTTPUrlRewrite
+
+	// add by qiuming.zjp 2016.06.23
+	o.parameters = parameters
 
 	o.queue = make(chan []byte, 100)
 	if Settings.outputHTTPStats {
@@ -209,8 +214,13 @@ func (o *HTTPOutput) sendRequest(client *http.Client, data []byte) {
 	// Rewrite the path as necessary
 	request.URL.Path = o.outputHTTPUrlRewrite.Rewrite(request.URL.Path)
 
+	// add the parameters. by qiuming.zjp 2016.06.23
+	additionalParameter := ""
+	additionalParameter = o.parameters.SetParameter()
+	// end by qiuming.zjp
+
 	// Change HOST of original request
-	URL := o.address + request.URL.Path + "?" + request.URL.RawQuery
+	URL := o.address + request.URL.Path + "?" + additionalParameter + request.URL.RawQuery
 
 	request.RequestURI = ""
 	request.URL, _ = url.ParseRequestURI(URL)

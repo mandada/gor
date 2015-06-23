@@ -41,6 +41,8 @@ type AppSettings struct {
 	outputHTTPWorkers           int
 	outputHTTPStats             bool
 	outputHTTPRedirects         int
+	// add by qiuming.zjp --2015.06.23
+	outputHTTPUrlParameters UrlParametes
 }
 
 var Settings AppSettings = AppSettings{}
@@ -79,6 +81,9 @@ func init() {
 	flag.Var(&Settings.outputHTTPUrlRegexp, "output-http-url-regexp", "A regexp to match requests against. Anything else will be dropped:\n\t gor --input-raw :8080 --output-http staging.com --output-http-url-regexp ^www.")
 	flag.Var(&Settings.outputHTTPHeaderFilters, "output-http-header-filter", "A regexp to match a specific header against. Requests with non-matching headers will be dropped:\n\t gor --input-raw :8080 --output-http staging.com --output-http-header-filter api-version:^v1")
 	flag.Var(&Settings.outputHTTPHeaderHashFilters, "output-http-header-hash-filter", "Takes a fraction of requests, consistently taking or rejecting a request based on the FNV32-1A hash of a specific header. The fraction must have a denominator that is a power of two:\n\t gor --input-raw :8080 --output-http staging.com --output-http-header-hash-filter user-id:1/4")
+	// add by qiuming.zjp --2016.06.23
+	flag.Var(&Settings.outputHTTPUrlParameters, "output-http-url-parameter", "Inject additional parameters to http request:\n\tgor --input-raw :8080 --output-http staging.com --output-http-url-parameter 'key=value'")
+	// end by qiuming.zjp --2016.06.23
 	flag.IntVar(&Settings.outputHTTPWorkers, "output-http-workers", -1, "Gor uses dynamic worker scaling by default.  Enter a number to run a set number of workers.")
 	flag.BoolVar(&Settings.outputHTTPStats, "output-http-stats", false, "Report http output queue stats to console every 5 seconds.")
 
